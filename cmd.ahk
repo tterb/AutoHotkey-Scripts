@@ -1,16 +1,23 @@
-﻿SetTitleMatchMode, 2
-ifwinactive, ahk_class CabinetWClass
-    ControlGetText, address , edit1, ahk_class CabinetWClass
-else
-    address =
+;Opens cmd at the user profile directory (Win + c)
+#c::cmd()
 
-;Exclude specific windows
-;ifwinactive, My Computer
-;address =
+;Opens cmd at the current File Explorer directory (Win + ctrl + c)
+^#c::cmdExplorer()
 
-if (address <> "") {
-    Run, cmd.exe, %address%
-} else {
+cmd() {
+    SetTitleMatchMode, 2
     Run, cmd.exe, C:\Users\there\
+    return
 }
-Return
+
+cmdExplorer() {
+	#IfWinActive ahk_class CabinetWClass  ; for use in explorer.
+	ClipSaved := ClipboardAll
+	Send !d
+	Sleep 10
+	Send ^c
+	Run, cmd /K "cd `"%clipboard%`"" := ClipSaved
+	ClipSaved =
+	return
+	#IfWinActive
+}

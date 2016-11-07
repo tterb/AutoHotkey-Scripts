@@ -1,8 +1,11 @@
-﻿;Writes e-mail address (ctrl + 2)
+;Writes e-mail address (ctrl + 2)
 ^2::write("Your email address here")
 
-;Opens cmd at "C:\Users\there\" (Win + c)
+;Opens cmd at the user profile directory (Win + c)
 #c::cmd()
+
+;Opens cmd at the current File Explorer directory (Win + ctrl + c)
+^#c::cmdExplorer()
 
 ;Unzips file to new folder (ctrl + shift + LMB)
 +^LButton::7zip()
@@ -21,21 +24,21 @@ write(txt) {
 
 cmd() {
     SetTitleMatchMode, 2
-    ifwinactive, ahk_class CabinetWClass
-        ControlGetText, address , edit1, ahk_class CabinetWClass
-    else
-        address =
+    Run, cmd.exe, C:\Users\there\  ; Change this to your user profile
+    return
+}
 
-    ;Exclude specific windows
-    ;ifwinactive, My Computer
-        ;address =
-
-    if (address <> "") {
-        Run, cmd.exe, %address%
-    } else {
-        Run, cmd.exe, C:\Users\there\
-    }
-    Return
+cmdExplorer() {
+    #IfWinActive ahk_class CabinetWClass  ; for use in explorer.
+    SetTitleMatchMode, 2
+    ClipSaved := ClipboardAll
+    Send !d
+    Sleep 10
+    Send ^c
+    Run, cmd /K "cd `"%clipboard%`"" := ClipSaved7
+    ClipSaved =
+    return
+    #IfWinActive
 }
 
 
@@ -54,15 +57,15 @@ cmd() {
     outdir := getdir(file)
     if (A_Is64bitOS = 1) {
         runwait, "C:\Program Files\7-Zip\7z.exe" x "%file%" -o"%outdir%" -y,,hide
-    } else {
-        runwait, "C:\Program Files (x86)\7-Zip\7z.exe" x "%file%" -o"%outdir%" -y,,hide
+        } else {
+            runwait, "C:\Program Files (x86)\7-Zip\7z.exe" x "%file%" -o"%outdir%" -y,,hide
+        }
+        msgbox, 7zip has finished extracting "%file%".
+        return
     }
-    msgbox, 7zip has finished extracting "%file%".
-    return
-}
 
-getdir(input) {
-    SplitPath, input,,parentdir,,filenoext
-    final = %parentdir%\%filenoext%
-    return final
-}
+    getdir(input) {
+        SplitPath, input,,parentdir,,filenoext
+        final = %parentdir%\%filenoext%
+        return final
+    }
